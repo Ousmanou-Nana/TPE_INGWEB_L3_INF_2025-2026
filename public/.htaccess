@@ -1,0 +1,9 @@
+Options -MultiViews
+RewriteEngine On
+
+# Serve static assets directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Route everything else through index.php
+RewriteRule ^ index.php [QSA,L]
