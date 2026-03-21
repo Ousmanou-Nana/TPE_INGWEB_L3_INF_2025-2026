@@ -68,4 +68,187 @@ class AdminController {
         require __DIR__ . '/../views/admin/teachers.php';
     }
 
+   public function subjects(): void {
+        $message = '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = $_POST['action'] ?? '';
+            if ($action === 'create') {
+                $nom    = trim($_POST['nom'] ?? '');
+                $color  = $_POST['couleur'] ?? '#4A90E2';
+                $heures = (int)($_POST['heures'] ?? 2);
+                if ($nom) {
+                    $this->db->insert('INSERT INTO subjects (nom, couleur, heures_par_semaine) VALUES (?,?,?)', [$nom, $color, $heures]);
+                    $message = 'Matière créée.';
+                }
+            } elseif ($action === 'delete') {
+                $id = (int)($_POST['id'] ?? 0);
+                $this->db->execute('DELETE FROM subjects WHERE id=?', [$id]);
+                $message = 'Matière supprimée.';
+            } elseif ($action === 'edit') {
+                $id     = (int)($_POST['id'] ?? 0);
+                $nom    = trim($_POST['nom'] ?? '');
+                $color  = $_POST['couleur'] ?? '#4A90E2';
+                $heures = (int)($_POST['heures'] ?? 2);
+                $this->db->execute('UPDATE subjects SET nom=?, couleur=?, heures_par_semaine=? WHERE id=?', [$nom, $color, $heures, $id]);
+                $message = 'Matière modifiée.';
+            }
+        }
+        $subjects = $this->db->fetchAll('SELECT * FROM subjects ORDER BY nom');
+        require __DIR__ . '/../views/admin/subjects.php';
+    }
+
+   public function classes(): void {
+        $message = '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = $_POST['action'] ?? '';
+            if ($action === 'create') {
+                $nom = trim($_POST['nom'] ?? '');
+                $eff = (int)($_POST['effectif'] ?? 30);
+                if ($nom) {
+                    $this->db->insert('INSERT INTO classes (nom, effectif) VALUES (?,?)', [$nom, $eff]);
+                    $message = 'Classe créée.';
+                }
+            } elseif ($action === 'delete') {
+                $id = (int)($_POST['id'] ?? 0);
+                $this->db->execute('DELETE FROM classes WHERE id=?', [$id]);
+                $message = 'Classe supprimée.';
+            } elseif ($action === 'edit') {
+                $id  = (int)($_POST['id'] ?? 0);
+                $nom = trim($_POST['nom'] ?? '');
+                $eff = (int)($_POST['effectif'] ?? 30);
+                $this->db->execute('UPDATE classes SET nom=?, effectif=? WHERE id=?', [$nom, $eff, $id]);
+                $message = 'Classe modifiée.';
+            }
+        }
+        $classes = $this->db->fetchAll('SELECT * FROM classes ORDER BY nom');
+        require __DIR__ . '/../views/admin/classes.php';
+    }
+
+   public function rooms(): void {
+        $message = '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = $_POST['action'] ?? '';
+            if ($action === 'create') {
+                $nom = trim($_POST['nom'] ?? '');
+                $cap = (int)($_POST['capacite'] ?? 30);
+                if ($nom) {
+                    $this->db->insert('INSERT INTO rooms (nom, capacite) VALUES (?,?)', [$nom, $cap]);
+                    $message = 'Salle créée.';
+                }
+            } elseif ($action === 'delete') {
+                $id = (int)($_POST['id'] ?? 0);
+                $this->db->execute('DELETE FROM rooms WHERE id=?', [$id]);
+                $message = 'Salle supprimée.';
+            } elseif ($action === 'edit') {
+                $id  = (int)($_POST['id'] ?? 0);
+                $nom = trim($_POST['nom'] ?? '');
+                $cap = (int)($_POST['capacite'] ?? 30);
+                $this->db->execute('UPDATE rooms SET nom=?, capacite=? WHERE id=?', [$nom, $cap, $id]);
+                $message = 'Salle modifiée.';
+            }
+        }
+        $rooms = $this->db->fetchAll('SELECT * FROM rooms ORDER BY nom');
+        require __DIR__ . '/../views/admin/rooms.php';
+    }
+  public function assignments(): void {
+        $message = '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = $_POST['action'] ?? '';
+            if ($action === 'assign_teacher') {
+                $tid = (int)($_POST['teacher_id'] ?? 0);
+                $sid = (int)($_POST['subject_id'] ?? 0);
+                if ($tid && $sid) {
+                    try {
+                        $this->db->insert('INSERT IGNORE INTO teacher_subject VALUES (?,?)', [$tid, $sid]);
+                        $message = 'Assignation enseignant-matière effectuée.';
+                    } catch (Exception $e) {
+                        $message = 'Erreur: ' . $e->getMessage();
+                    }
+                }
+            } elseif ($action === 'remove_teacher') {
+                $tid = (int)($_POST['teacher_id'] ?? 0);
+                $sid = (int)($_POST['subject_id'] ?? 0);
+                $this->db->execute('DELETE FROM teacher_subject WHERE teacher_id=? AND subject_id=?', [$tid, $sid]);
+                $message = 'Assignation supprimée.';
+            } elseif ($action === 'assign_class') {
+                $cid    = (int)($_POST['class_id'] ?? 0);
+                $sid    = (int)($_POST['subject_id'] ?? 0);
+                $heures = (int)($_POST['heures'] ?? 2);
+                if ($cid && $sid) {
+                    $this->db->insert(
+                        'INSERT INTO class_subject (class_id, subject_id, heures_par_semaine) VALUES (?,?,?) ON DUPLICATE KEY UPDATE heures_par_semaine=?',
+                        [$cid, $sid, $heures, $heures]
+                    );
+                    $message = 'Assignation classe-matière effectuée.';
+                }
+            } elseif ($action === 'remove_class') {
+                $cid = (int)($_POST['class_id'] ?? 0);
+                $sid = (int)($_POST['subject_id'] ?? 0);
+                $this->db->execute('DELETE FROM class_subject WHERE class_id=? AND subject_id=?', [$cid, $sid]);
+                $message = 'Assignation supprimée.';
+            }
+        }
+
+        $teachers = $this->db->fetchAll('SELECT t.id, u.nom FROM teachers t JOIN users u ON t.user_id=u.id ORDER BY u.nom');
+        $subjects = $this->db->fetchAll('SELECT * FROM subjects ORDER BY nom');
+        $classes  = $this->db->fetchAll('SELECT * FROM classes ORDER BY nom');
+
+        $teacher_subjects = $this->db->fetchAll(
+            'SELECT ts.teacher_id, ts.subject_id, u.nom as teacher_nom, s.nom as subject_nom
+             FROM teacher_subject ts
+             JOIN teachers t ON ts.teacher_id=t.id
+             JOIN users u ON t.user_id=u.id
+             JOIN subjects s ON ts.subject_id=s.id
+             ORDER BY u.nom'
+        );
+        $class_subjects = $this->db->fetchAll(
+            'SELECT cs.class_id, cs.subject_id, cs.heures_par_semaine, c.nom as class_nom, s.nom as subject_nom
+             FROM class_subject cs
+             JOIN classes c ON cs.class_id=c.id
+             JOIN subjects s ON cs.subject_id=s.id
+             ORDER BY c.nom'
+        );
+
+        require __DIR__ . '/../views/admin/assignments.php';
+    }
+
+    public function timetable(): void {
+        $generations = $this->db->fetchAll(
+            'SELECT * FROM timetable_generations ORDER BY created_at DESC'
+        );
+        $gen_id  = (int)($_GET['gen'] ?? 0);
+        $class_id = (int)($_GET['class'] ?? 0);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_gen') {
+            $gid = (int)($_POST['gen_id'] ?? 0);
+            $this->db->execute('DELETE FROM timetable WHERE generation_id=?', [$gid]);
+            $this->db->execute('DELETE FROM timetable_generations WHERE id=?', [$gid]);
+            header('Location: /admin/timetable');
+            exit;
+        }
+
+        $timetable_data = [];
+        $classes = $this->db->fetchAll('SELECT * FROM classes ORDER BY nom');
+
+        if ($gen_id && $class_id) {
+            $rows = $this->db->fetchAll(
+                'SELECT tt.*, s.nom as subject_nom, s.couleur, u.nom as teacher_nom, r.nom as room_nom
+                 FROM timetable tt
+                 JOIN subjects s ON tt.subject_id=s.id
+                 JOIN teachers t ON tt.teacher_id=t.id
+                 JOIN users u ON t.user_id=u.id
+                 JOIN rooms r ON tt.room_id=r.id
+                 WHERE tt.generation_id=? AND tt.class_id=?
+                 ORDER BY tt.jour, tt.periode',
+                [$gen_id, $class_id]
+            );
+            foreach ($rows as $row) {
+                $timetable_data[$row['jour']][$row['periode']] = $row;
+            }
+        }
+
+        require __DIR__ . '/../views/admin/timetable.php';
+    }
+
+  
 }
