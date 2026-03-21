@@ -21,7 +21,7 @@ class TeacherController {
         $message = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Save preferences grid
+           
             $this->db->execute('DELETE FROM preferences WHERE teacher_id=?', [$teacher_id]);
 
             for ($jour = 1; $jour <= 5; $jour++) {

@@ -1,5 +1,5 @@
 <?php
-// /app/controllers/AuthController.php
+
 
 class AuthController {
     private Database $db;
