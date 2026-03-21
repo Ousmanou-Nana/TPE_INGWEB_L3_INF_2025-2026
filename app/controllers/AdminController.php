@@ -250,5 +250,18 @@ class AdminController {
         require __DIR__ . '/../views/admin/timetable.php';
     }
 
-  
+   public function generate(): void {
+        require __DIR__ . '/../views/admin/generate.php';
+    }
+
+    public function runGeneration(): void {
+        header('Content-Type: application/json');
+        $nom = trim($_POST['nom'] ?? 'Emploi du temps ' . date('d/m/Y H:i'));
+
+        require_once __DIR__ . '/../models/TimetableGenerator.php';
+        $generator = new TimetableGenerator($this->db);
+        $result = $generator->generate($nom);
+
+        echo json_encode($result);
+    }
 }
