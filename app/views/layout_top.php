@@ -9,7 +9,7 @@ $avatar = strtoupper(substr($nom, 0, 1));
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars($page_title ?? 'SchoolTime') ?> SchoolTime</title>
+    <title><?= htmlspecialchars($page_title ?? 'OthTime') ?> OthTime</title>
     <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
@@ -18,7 +18,7 @@ $avatar = strtoupper(substr($nom, 0, 1));
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <h2> SchoolTime</h2>
+            <h2> OthTime</h2>
             <p>Gestion des emplois du temps</p>
         </div>
         <nav class="sidebar-nav">
