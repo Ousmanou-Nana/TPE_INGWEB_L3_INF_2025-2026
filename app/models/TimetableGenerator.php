@@ -1,16 +1,17 @@
 <?php
 
 
-class TimetableGenerator {
+class TimetableGenerator
+{
     private Database $db;
 
     private const DAYS    = [1, 2, 3, 4, 5];
     private const PERIODS = [1, 2, 3, 4, 5, 6];
 
-    private const SA_INITIAL_TEMP = 1000.0; 
-    private const SA_COOLING_RATE = 0.995;  
-    private const SA_MIN_TEMP     = 0.1;    
-    private const SA_RESTARTS     = 5;     
+    private const SA_INITIAL_TEMP = 1000.0;
+    private const SA_COOLING_RATE = 0.995;
+    private const SA_MIN_TEMP     = 0.1;
+    private const SA_RESTARTS     = 5;
 
     private array $classes          = [];
     private array $rooms            = [];
@@ -20,12 +21,14 @@ class TimetableGenerator {
     private array $teacher_subjects = [];
     private array $preferences      = [];
 
-    public function __construct(Database $db) {
+    public function __construct(Database $db)
+    {
         $this->db = $db;
     }
 
- 
-    public function generate(string $nom): array {
+
+    public function generate(string $nom): array
+    {
         $this->loadData();
 
         if (empty($this->classes) || empty($this->rooms) || empty($this->class_subjects)) {
@@ -37,16 +40,31 @@ class TimetableGenerator {
         if (empty($slots)) {
             return ['success' => false, 'error' => 'Aucun cours à planifier. Vérifiez les assignations matière-classe et enseignant-matière.'];
         }
-$best_solution = $this->runSA($slots);
+        $best_solution = $this->runSA($slots);
         $best_score    = $this->scoreTotal($best_solution);
         $conflicts     = $this->countConflicts($best_solution);
-
-        $gen_id = $this->db->insert(
-            'INSERT INTO timetable_generations (nom, score_total, nb_conflits, is_active) VALUES (?,?,?,1)',
+        $new_id = $this->db->insert(
+            'INSERT INTO timetable_generations (nom, score_total, nb_conflits, is_active) VALUES (?,?,?,0)',
             [$nom, $best_score, $conflicts]
         );
 
+        $last_score = $this->db->fetchOne('SELECT score_total,nb_conflits,id FROM timetable_generations  WHERE is_active = 1');
+
+        if ($last_score['score_total'] < $best_score) {
+            $gen_id = $new_id;
+        } elseif ($last_score['score_total'] == $best_score) {
+            if ($last_score['nb_conflits'] > $conflicts) {
+                $gen_id = $new_id;
+            } else {
+                $gen_id = $last_score['id'];
+            }
+        } else {
+            $gen_id = $last_score['id'];
+        }
+
+
         $this->db->execute('UPDATE timetable_generations SET is_active=0 WHERE id != ?', [$gen_id]);
+        $this->db->execute('UPDATE timetable_generations SET is_active=1 WHERE id = ?', [$gen_id]);
 
         $inserted = 0;
         foreach ($best_solution as $entry) {
@@ -70,9 +88,10 @@ $best_solution = $this->runSA($slots);
         ];
     }
 
-    
-    
-    private function runSA(array $slots): array {
+
+
+    private function runSA(array $slots): array
+    {
         $best_ever       = null;
         $best_ever_score = PHP_INT_MIN;
 
@@ -93,11 +112,11 @@ $best_solution = $this->runSA($slots);
                 $delta           = $neighbour_score - $current_score;
 
                 if ($delta > 0) {
-                    
+
                     $current       = $neighbour;
                     $current_score = $neighbour_score;
                 } else {
-                   if ((mt_rand() / mt_getrandmax()) < exp($delta / $temp)) {
+                    if ((mt_rand() / mt_getrandmax()) < exp($delta / $temp)) {
                         $current       = $neighbour;
                         $current_score = $neighbour_score;
                     }
@@ -124,8 +143,9 @@ $best_solution = $this->runSA($slots);
         return $best_ever;
     }
 
-   
-    private function perturb(array $solution): array {
+
+    private function perturb(array $solution): array
+    {
         if (empty($solution)) return $solution;
 
         $n    = count($solution);
@@ -135,13 +155,13 @@ $best_solution = $this->runSA($slots);
             $i = rand(0, $n - 1);
             $solution[$i]['jour']    = rand(1, 5);
             $solution[$i]['periode'] = rand(1, 6);
-
         } elseif ($type === 1 && $n >= 2) {
             $i = rand(0, $n - 1);
-            do { $j = rand(0, $n - 1); } while ($j === $i);
+            do {
+                $j = rand(0, $n - 1);
+            } while ($j === $i);
             [$solution[$i]['jour'],    $solution[$j]['jour']]    = [$solution[$j]['jour'],    $solution[$i]['jour']];
             [$solution[$i]['periode'], $solution[$j]['periode']] = [$solution[$j]['periode'], $solution[$i]['periode']];
-
         } else {
             $i          = rand(0, $n - 1);
             $subject_id = $solution[$i]['subject_id'];
@@ -160,8 +180,9 @@ $best_solution = $this->runSA($slots);
         return $solution;
     }
 
-  
-    private function loadData(): void {
+
+    private function loadData(): void
+    {
         $this->classes  = $this->db->fetchAll('SELECT * FROM classes');
         $this->rooms    = $this->db->fetchAll('SELECT * FROM rooms');
         $this->subjects = $this->db->fetchAll('SELECT * FROM subjects');
@@ -187,8 +208,9 @@ $best_solution = $this->runSA($slots);
         }
     }
 
-  
-    private function buildSlots(): array {
+
+    private function buildSlots(): array
+    {
         $slots = [];
         foreach ($this->class_subjects as $class_id => $subjects) {
             foreach ($subjects as $subject_id => $heures) {
@@ -211,7 +233,8 @@ $best_solution = $this->runSA($slots);
     }
 
 
-    private function generateInitial(array $slots): array {
+    private function generateInitial(array $slots): array
+    {
         $solution  = [];
         $all_slots = [];
         foreach (self::DAYS as $d) {
@@ -263,10 +286,14 @@ $best_solution = $this->runSA($slots);
         return $solution;
     }
 
-    private function pickRoom(int $class_id): ?array {
+    private function pickRoom(int $class_id): ?array
+    {
         $class = null;
         foreach ($this->classes as $c) {
-            if ($c['id'] == $class_id) { $class = $c; break; }
+            if ($c['id'] == $class_id) {
+                $class = $c;
+                break;
+            }
         }
         $effectif = $class['effectif'] ?? 30;
 
@@ -279,7 +306,8 @@ $best_solution = $this->runSA($slots);
     }
 
 
-    private function scoreTotal(array $solution): int {
+    private function scoreTotal(array $solution): int
+    {
         $score         = 0;
         $teacher_slots = [];
         $room_slots    = [];
@@ -320,7 +348,9 @@ $best_solution = $this->runSA($slots);
             if (!empty($counts)) {
                 $avg      = array_sum($counts) / count($counts);
                 $variance = 0;
-                foreach ($counts as $cnt) { $variance += ($cnt - $avg) ** 2; }
+                foreach ($counts as $cnt) {
+                    $variance += ($cnt - $avg) ** 2;
+                }
                 $variance /= count($counts);
                 if ($variance < 2) $score += 5;
             }
@@ -329,7 +359,8 @@ $best_solution = $this->runSA($slots);
         return $score;
     }
 
-    private function countConflicts(array $solution): int {
+    private function countConflicts(array $solution): int
+    {
         $conflicts     = 0;
         $teacher_slots = [];
         $room_slots    = [];

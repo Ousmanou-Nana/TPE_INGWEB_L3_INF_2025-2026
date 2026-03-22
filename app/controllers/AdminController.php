@@ -24,7 +24,7 @@ class AdminController {
             'generations' => $this->db->fetchOne('SELECT COUNT(*) as c FROM timetable_generations')['c'],
         ];
         $recent = $this->db->fetchAll(
-            'SELECT * FROM timetable_generations ORDER BY created_at DESC LIMIT 5'
+            'SELECT * FROM timetable_generations ORDER BY score_total DESC LIMIT 5'
         );
         require __DIR__ . '/../views/admin/dashboard.php';
     }
