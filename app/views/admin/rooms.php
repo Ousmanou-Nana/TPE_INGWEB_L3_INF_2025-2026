@@ -33,7 +33,7 @@ require __DIR__ . '/../layout_top.php';
                             <form method="POST" onsubmit="return confirm('Supprimer ?')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $r['id'] ?>">
-                                <button class="btn btn-sm btn-danger">supp</button>
+                                <button class="btn btn-sm btn-danger">Supprimer</button>
                             </form>
                         </div>
                     </td>

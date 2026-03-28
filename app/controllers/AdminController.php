@@ -212,43 +212,60 @@ class AdminController {
         require __DIR__ . '/../views/admin/assignments.php';
     }
 
-    public function timetable(): void {
-        $generations = $this->db->fetchAll(
-            'SELECT * FROM timetable_generations ORDER BY created_at DESC'
-        );
-        $gen_id  = (int)($_GET['gen'] ?? 0);
-        $class_id = (int)($_GET['class'] ?? 0);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_gen') {
-            $gid = (int)($_POST['gen_id'] ?? 0);
-            $this->db->execute('DELETE FROM timetable WHERE generation_id=?', [$gid]);
-            $this->db->execute('DELETE FROM timetable_generations WHERE id=?', [$gid]);
-            header('Location: /admin/timetable');
-            exit;
-        }
+public function timetable(): void
+{
+    $generations = $this->db->fetchAll(
+        'SELECT * FROM timetable_generations ORDER BY score_total DESC'
+    );
 
-        $timetable_data = [];
-        $classes = $this->db->fetchAll('SELECT * FROM classes ORDER BY nom');
+    $gen_id   = (int)($_GET['gen']   ?? 0);
+    $class_id = (int)($_GET['class'] ?? 0);
 
-        if ($gen_id && $class_id) {
-            $rows = $this->db->fetchAll(
-                'SELECT tt.*, s.nom as subject_nom, s.couleur, u.nom as teacher_nom, r.nom as room_nom
-                 FROM timetable tt
-                 JOIN subjects s ON tt.subject_id=s.id
-                 JOIN teachers t ON tt.teacher_id=t.id
-                 JOIN users u ON t.user_id=u.id
-                 JOIN rooms r ON tt.room_id=r.id
-                 WHERE tt.generation_id=? AND tt.class_id=?
-                 ORDER BY tt.jour, tt.periode',
-                [$gen_id, $class_id]
-            );
-            foreach ($rows as $row) {
-                $timetable_data[$row['jour']][$row['periode']] = $row;
-            }
-        }
-
-        require __DIR__ . '/../views/admin/timetable.php';
+    // ── Handle delete ──────────────────────────────────────────
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_gen') {
+        $gid = (int)($_POST['gen_id'] ?? 0);
+        $this->db->execute('DELETE FROM timetable WHERE generation_id=?', [$gid]);
+        $this->db->execute('DELETE FROM timetable_generations WHERE id=?', [$gid]);
+        header('Location: /admin/timetable');
+        exit;
     }
+
+    // ── Load timetable rows with preference score ──────────────
+    $timetable_data = [];
+    $classes        = $this->db->fetchAll('SELECT * FROM classes ORDER BY nom');
+
+    if ($gen_id && $class_id) {
+        $rows = $this->db->fetchAll(
+            'SELECT
+                tt.*,
+                s.nom        AS subject_nom,
+                s.couleur,
+                u.nom        AS teacher_nom,
+                r.nom        AS room_nom,
+                COALESCE(pr.score, 0) AS pref_score
+             FROM timetable tt
+             JOIN subjects  s  ON tt.subject_id  = s.id
+             JOIN teachers  t  ON tt.teacher_id  = t.id
+             JOIN users     u  ON t.user_id       = u.id
+             JOIN rooms     r  ON tt.room_id      = r.id
+             LEFT JOIN preferences pr
+                ON  pr.teacher_id = tt.teacher_id
+                AND pr.jour       = tt.jour
+                AND pr.periode    = tt.periode
+             WHERE tt.generation_id = ?
+               AND tt.class_id      = ?
+             ORDER BY tt.jour, tt.periode',
+            [$gen_id, $class_id]
+        );
+
+        foreach ($rows as $row) {
+            $timetable_data[$row['jour']][$row['periode']] = $row;
+        }
+    }
+
+    require __DIR__ . '/../views/admin/timetable.php';
+}
 
    public function generate(): void {
         require __DIR__ . '/../views/admin/generate.php';

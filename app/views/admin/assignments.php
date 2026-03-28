@@ -52,7 +52,7 @@ $days_fr = ['','Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
                             <input type="hidden" name="action" value="remove_teacher">
                             <input type="hidden" name="teacher_id" value="<?= $ts['teacher_id'] ?>">
                             <input type="hidden" name="subject_id" value="<?= $ts['subject_id'] ?>">
-                            <button class="btn btn-sm btn-danger">supp</button>
+                            <button class="btn btn-sm btn-danger">Supprimer</button>
                         </form>
                     </td>
                 </tr>
@@ -112,7 +112,7 @@ $days_fr = ['','Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
                             <input type="hidden" name="action" value="remove_class">
                             <input type="hidden" name="class_id" value="<?= $cs['class_id'] ?>">
                             <input type="hidden" name="subject_id" value="<?= $cs['subject_id'] ?>">
-                            <button class="btn btn-sm btn-danger">supp</button>
+                            <button class="btn btn-sm btn-danger">Supprimer</button>
                         </form>
                     </td>
                 </tr>

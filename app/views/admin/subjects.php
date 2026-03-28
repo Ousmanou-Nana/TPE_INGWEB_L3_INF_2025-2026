@@ -51,7 +51,7 @@ require __DIR__ . '/../layout_top.php';
                             <form method="POST" onsubmit="return confirm('Supprimer ?')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                <button class="btn btn-sm btn-danger">supp</button>
+                                <button class="btn btn-sm btn-danger">Supprimer</button>
                             </form>
                         </div>
                     </td>
@@ -63,7 +63,7 @@ require __DIR__ . '/../layout_top.php';
     </div>
 </div>
 
-<!-- Edit modal -->
+
 <div id="subjModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:400px">
         <h3 style="margin-bottom:20px"> Modifier la matière</h3>

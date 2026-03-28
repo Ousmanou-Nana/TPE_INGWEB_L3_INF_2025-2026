@@ -8,7 +8,6 @@ require __DIR__ . '/../layout_top.php';
 <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
 <?php endif; ?>
 
-<!-- Add form -->
 <div class="card mb-6">
     <div class="card-header"><h3>Ajouter un enseignant</h3></div>
     <div class="card-body">
@@ -36,7 +35,6 @@ require __DIR__ . '/../layout_top.php';
     </div>
 </div>
 
-<!-- List -->
 <div class="card">
     <div class="card-header">
         <h3> Liste des enseignants (<?= count($teachers) ?>)</h3>
@@ -62,13 +60,13 @@ require __DIR__ . '/../layout_top.php';
                     <td class="text-muted"><?= htmlspecialchars($t['email']) ?></td>
                     <td>
                         <div class="flex gap-2">
-                            <!-- Edit modal trigger -->
+                            
                             <button onclick="openEdit(<?= $t['id'] ?>, <?= $t['user_id'] ?>, '<?= htmlspecialchars(addslashes($t['nom'])) ?>', '<?= htmlspecialchars(addslashes($t['email'])) ?>')"
                                     class="btn btn-sm btn-primary"> Modifier</button>
                             <form method="POST" onsubmit="return confirm('Supprimer cet enseignant ?')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $t['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger">supp Supprimer</button>
+                                <button type="submit" class="btn btn-sm btn-danger">Supprimer Supprimer</button>
                             </form>
                         </div>
                     </td>
@@ -80,7 +78,7 @@ require __DIR__ . '/../layout_top.php';
     </div>
 </div>
 
-<!-- Edit Modal -->
+
 <div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:440px;box-shadow:0 24px 80px rgba(0,0,0,.2)">
         <h3 style="margin-bottom:20px"> Modifier l'enseignant</h3>

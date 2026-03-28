@@ -11,7 +11,6 @@ $periods_fr = ['', '8h-9h', '9h-10h', '10h-11h', '11h-12h', '14h-15h', '15h-16h'
 <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
 <?php endif; ?>
 
-<!-- Preferences form -->
 <div class="card mb-6">
     <div class="card-header">
         <h3> Définir mes disponibilités</h3>
@@ -20,7 +19,7 @@ $periods_fr = ['', '8h-9h', '9h-10h', '10h-11h', '11h-12h', '14h-15h', '15h-16h'
     <div class="card-body">
         <form method="POST">
             <div class="pref-grid">
-                <!-- Header row -->
+               
                 <div class="pref-header" style="background:transparent;border:none"></div>
                 <?php foreach ([1,2,3,4,5] as $d): ?>
                 <div class="pref-header"><?= $days_fr[$d] ?></div>
@@ -53,7 +52,7 @@ $periods_fr = ['', '8h-9h', '9h-10h', '10h-11h', '11h-12h', '14h-15h', '15h-16h'
     </div>
 </div>
 
-<!-- Teacher's own timetable (from active generation) -->
+
 <?php if (!empty($timetable_data)): ?>
 <div class="card">
     <div class="card-header"><h3> Mon emploi du temps (génération active)</h3></div>

@@ -8,10 +8,10 @@ class TimetableGenerator
     private const DAYS    = [1, 2, 3, 4, 5];
     private const PERIODS = [1, 2, 3, 4, 5, 6];
 
-    private const SA_INITIAL_TEMP = 1000.0;
+    private const SA_INITIAL_TEMP = 10000.0;
     private const SA_COOLING_RATE = 0.995;
     private const SA_MIN_TEMP     = 0.1;
-    private const SA_RESTARTS     = 5;
+    private const SA_RESTARTS     = 50;
 
     private array $classes          = [];
     private array $rooms            = [];
