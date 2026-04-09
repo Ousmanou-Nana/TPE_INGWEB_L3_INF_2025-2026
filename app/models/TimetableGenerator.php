@@ -48,21 +48,25 @@ class TimetableGenerator
             [$nom, $best_score, $conflicts]
         );
 
-        $last_score = $this->db->fetchOne('SELECT score_total,nb_conflits,id FROM timetable_generations  WHERE is_active = 1');
+        $last_score = $this->db->fetchOne('SELECT score_total, nb_conflits, id FROM timetable_generations WHERE is_active = 1');
 
-        if ($last_score['score_total'] < $best_score) {
-            $gen_id = $new_id;
-        } elseif ($last_score['score_total'] == $best_score) {
-            if ($last_score['nb_conflits'] > $conflicts) {
+        if ($last_score) {
+            if ($last_score['score_total'] < $best_score) {
                 $gen_id = $new_id;
+            } elseif ($last_score['score_total'] == $best_score) {
+
+                if ($last_score['nb_conflits'] > $conflicts) {
+                    $gen_id = $new_id;
+                } else {
+                    $gen_id = $last_score['id'];
+                }
             } else {
                 $gen_id = $last_score['id'];
             }
         } else {
-            $gen_id = $last_score['id'];
+            // no previous score
+            $gen_id = $new_id;
         }
-
-
         $this->db->execute('UPDATE timetable_generations SET is_active=0 WHERE id != ?', [$gen_id]);
         $this->db->execute('UPDATE timetable_generations SET is_active=1 WHERE id = ?', [$gen_id]);
 
